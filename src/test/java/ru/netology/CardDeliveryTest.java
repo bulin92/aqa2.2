@@ -1,21 +1,31 @@
 package ru.netology;
 
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.Condition;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
 
-import static com.codeborne.selenide.Condition.exactText;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+import static com.codeborne.selenide.Selenide.*;
+
+
 public class CardDeliveryTest {
     @Test
-    void shouldSubmitRequest() {
+    public void shouldSuccessfulFormSubmission() {
         open("http://localhost:9999");
-        SelenideElement form = $("form");
-        form.$("[data-test-id=name] input").setValue("Булин Алексей");
-        form.$("[data-test-id=phone] input").setValue("+79293020000");
-        form.$("[data-test-id=agreement]").click();
-        form.$("[type='button']").click();
-        $("[data-test-id='order-success']").shouldHave(exactText("  Ваша заявка успешно отправлена!" +
-                " Наш менеджер свяжется с вами в ближайшее время."));
+        $("[data-test-id=city] input").setValue("Томск");
+        $("[data-test-id=date] input").doubleClick().sendKeys(Keys.DELETE);
+        String verificationDate = LocalDate.now() .plusDays(5)
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        $("[data-test-id=date] input").setValue(verificationDate);
+        $("[data-test-id=name] input").setValue("Булин Алексей");
+        $("[data-test-id=phone] input").setValue("+79293020000");
+        $("[data-test-id=agreement]").click();
+        $(".button").shouldHave(Condition.text("Забронировать")).click();
+        $("[data-test-id=notification]")
+                .shouldHave(Condition.text("Успешно! Встреча успешно забронирована на " + verificationDate),
+                        Duration.ofSeconds(15));
     }
 }
